@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SHR.NK — Link Shortener</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080808;
+    --bg2: #111110;
+    --bg3: #181817;
+    --border: #232321;
+    --border2: #2e2e2b;
+    --lime: #C9F135;
+    --lime-dim: #9DC220;
+    --lime-dark: #0f1a00;
+    --text: #F0EBE0;
+    --text2: #8A8680;
+    --text3: #4A4946;
+    --red: #FF4D4D;
+    --blue: #4D9EFF;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,8,8,0.88);
+    backdrop-filter: blur(16px);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.04em;
+    color: var(--lime);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .logo-dot { color: var(--text2); font-size: 24px; }
+  .nav-links {
+    display: flex; align-items: center; gap: 8px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--text2); text-decoration: none; font-size: 13px;
+    font-weight: 500; letter-spacing: 0.02em;
+    padding: 6px 12px; border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); background: var(--bg3); }
+  .nav-cta {
+    background: var(--lime) !important; color: #0A1000 !important;
+    font-weight: 600 !important; border-radius: 8px !important;
+    padding: 7px 18px !important;
+  }
+  .hero {
+    padding: 100px 0 72px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--border2); border-radius: 100px;
+    padding: 4px 14px 4px 8px; font-size: 12px; color: var(--text2);
+    font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .hero-tag-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--lime); display: inline-block;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 11vw, 128px);
+    line-height: 0.92; letter-spacing: 0.01em;
+    color: var(--text); position: relative; z-index: 1;
+    margin-bottom: 12px;
+  }
+  .hero-title span { color: var(--lime); }
+  .hero-subtitle {
+    font-size: 17px; color: var(--text2); max-width: 480px;
+    line-height: 1.65; position: relative; z-index: 1;
+    margin-bottom: 48px; font-weight: 300;
+  }
+  .input-card {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative; z-index: 1;
+    max-width: 720px;
+  }
+  .input-label {
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text3); font-weight: 500; margin-bottom: 10px;
+  }
+  .input-row {
+    display: flex; gap: 10px; align-items: stretch;
+  }
+  .url-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    min-width: 0;
+  }
+  .shorten-btn {
+    background: var(--lime);
+    color: #0A1000;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .result-section {
+    max-width: 720px;
+    margin-top: 16px;
+    display: none;
+  }
+  .result-section.visible { display: block; }
+  .result-card {
+    background: var(--lime-dark);
+    border: 1px solid rgba(201,241,53,0.25);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .result-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--lime); display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+  }
+  .result-content { flex: 1; min-width: 0; }
+  .result-short {
+    font-family: 'DM Mono', monospace; font-size: 18px;
+    color: var(--lime); font-weight: 500; letter-spacing: 0.02em;
+  }
+  .result-original {
+    font-size: 11px; color: var(--text3); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; margin-top: 2px;
+  }
+  .result-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .action-btn {
+    padding: 8px 16px; border-radius: 8px; font-size: 12px;
+    font-weight: 500; cursor: pointer; transition: all 0.15s;
+    border: 1px solid var(--border2);
+    background: var(--bg3); color: var(--text2);
+    font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .action-btn:hover { border-color: var(--border); color: var(--text); }
+  #toast {
+    position: fixed; bottom: 28px; right: 28px; z-index: 999;
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: 10px; padding: 12px 18px;
+    font-size: 13px; color: var(--text);
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+    transform: translateY(12px); opacity: 0;
+    transition: all 0.25s ease;
+    pointer-events: none;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  .toast-icon { color: var(--lime); font-size: 15px; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="#" class="logo">SHR<span class="logo-dot">.</span>NK</a>
+      <ul class="nav-links">
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-tag">
+      <span class="hero-tag-dot"></span>
+      Now in public beta
+    </div>
+    <h1 class="hero-title">
+      SHORT<br><span>LINKS.</span><br>BIG<br>IMPACT.
+    </h1>
+    <p class="hero-subtitle">
+      Transform long, unwieldy URLs into clean, trackable links — with real-time analytics, custom slugs, and full API access.
+    </p>
+
+    <!-- Input Card -->
+    <div class="input-card" id="inputCard">
+      <div class="input-label">Paste your long URL</div>
+      <div class="input-row">
+        <input
+          type="url"
+          class="url-input"
+          id="urlInput"
+          placeholder="https://your-very-long-url.com/that/goes/on/forever"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button class="shorten-btn" id="shortenBtn" onclick="shortenUrl()">
+          Shorten
+        </button>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-section" id="resultSection">
+      <div class="result-card" id="resultCard">
+        <div class="result-icon">✓</div>
+        <div class="result-content">
+          <div class="result-short" id="resultShort">shr.nk/abc123</div>
+          <div class="result-original" id="resultOriginal">https://</div>
+        </div>
+        <div class="result-actions">
+          <button class="action-btn" id="copyBtn" onclick="copyLink()">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TOAST ──────────────────────────────────── -->
+<div id="toast">
+  <span class="toast-icon">✓</span>
+  <span id="toastMsg">Copied!</span>
+</div>
+
+<script>
+  let links = [];
+
+  async function shortenUrl() {
+    const input = document.getElementById('urlInput');
+    const url = input.value.trim();
+    if (!url) {
+      input.focus();
+      return;
+    }
+    
+    // Auto prefix http
+    let finalUrl = url;
+    if (!finalUrl.startsWith('http')) {
+      finalUrl = 'https://' + finalUrl;
+    }
+
+    const btn = document.getElementById('shortenBtn');
+    btn.innerHTML = `Shortening...`;
+
+    try {
+      const response = await fetch('/api/url-shortener', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ longUrl: finalUrl })
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        throw new Error('Server invalid response');
+      }
+
+      if (!response.ok) {
+        throw new Error(data?.Error || 'Failed to shorten URL');
+      }
+
+      document.getElementById('resultShort').textContent = data.shortUrl;
+      document.getElementById('resultOriginal').textContent = finalUrl;
+      document.getElementById('resultSection').classList.add('visible');
+
+      btn.innerHTML = `Shorten`;
+      input.value = '';
+      showToast('Link shortened!');
+    } catch (err) {
+      btn.innerHTML = `Shorten`;
+      showToast(err.message);
+    }
+  }
+
+  function copyLink() {
+    const short = document.getElementById('resultShort').textContent;
+    copyText(short);
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard) { navigator.clipboard.writeText(text); }
+    else { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); }
+    showToast('Copied to clipboard!');
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+
+  // Enter key
+  document.getElementById('urlInput').addEventListener('keydown', e => { if (e.key === 'Enter') shortenUrl(); });
+</script>
+</body>
+</html>
