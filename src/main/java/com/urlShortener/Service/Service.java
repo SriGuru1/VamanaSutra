@@ -30,11 +30,6 @@ public class Service {
             throw new IllegalArgumentException("Enter Valid Url");
         }
 
-        Optional<Url> byLongUrl = repo.findByLongUrl(longUrl);
-        if(byLongUrl.isPresent()){
-            return byLongUrl.get();
-        }
-
         Url newUrl = new Url();
         newUrl.setLongUrl(longUrl);
         Url savedEntity = repo.save(newUrl);
