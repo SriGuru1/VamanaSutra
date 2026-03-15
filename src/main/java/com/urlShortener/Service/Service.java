@@ -17,6 +17,9 @@ public class Service {
     @Value("${app.baseUrl}")
     private String baseUrl;
 
+    // Every link gets a professional starting point (Offset)
+    private static final long OFFSET = 1000000L;
+
     @Autowired
     public Service(Repo repo){
         this.repo = repo;
@@ -36,12 +39,17 @@ public class Service {
         newUrl.setLongUrl(longUrl);
         Url savedEntity = repo.save(newUrl);
 
-        String shortId = encodeBase62(savedEntity.getId());
-        savedEntity.setShortUrl(baseUrl+"/api/" + shortId);
+        // Professional Shuffle: Make ID look random but keep it unique
+        long professionalId = (savedEntity.getId() * 7919L) + OFFSET;
+        String shortId = encodeBase62(professionalId);
+        
+        // Clean Prefix: '/v/' looks much better than '/api/'
+        savedEntity.setShortUrl(baseUrl + "/v/" + shortId);
         repo.save(savedEntity);
 
         return savedEntity;
     }
+
     private String encodeBase62(long n) {
         if (n == 0) {
             return String.valueOf(BASE62_CHARS.charAt(0));
@@ -54,11 +62,16 @@ public class Service {
         return sb.reverse().toString();
     }
 
-    public Url findByShortUrl(String shortUrl) throws  Exception{
-        String fullShortUrl = baseUrl+"/api/" + shortUrl;
-        Optional<Url> url = repo.findByShortUrl(fullShortUrl);
-        Url foundUrl = url.orElseThrow(()-> new UrlNotFoundException("Short Url Not Found"));
-
-        return foundUrl;
+    public Url findByShortUrl(String code) throws Exception {
+        // Look for the code in both new (/v/) and old (/api/) formats for compatibility
+        String vFormat = baseUrl + "/v/" + code;
+        String apiFormat = baseUrl + "/api/" + code;
+        
+        Optional<Url> url = repo.findByShortUrl(vFormat);
+        if (url.isEmpty()) {
+            url = repo.findByShortUrl(apiFormat);
+        }
+        
+        return url.orElseThrow(() -> new UrlNotFoundException("Short Url Not Found"));
     }
 }

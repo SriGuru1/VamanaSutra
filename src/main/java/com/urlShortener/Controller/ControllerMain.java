@@ -14,7 +14,6 @@ import java.net.URI;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
 public class ControllerMain {
 
     private final Service service;
@@ -24,7 +23,8 @@ public class ControllerMain {
         this.service = service;
     }
 
-    @PostMapping("url-shortener")
+    // This handles the shortening request
+    @PostMapping("/api/url-shortener")
     public ResponseEntity<Object> urlShortener(@RequestBody UrlRequest longUrl){
         try{
             Url url = service.convert(longUrl.getLongUrl());
@@ -35,7 +35,14 @@ public class ControllerMain {
         }
     }
 
-    @GetMapping("/{shortUrl}")
+    // Professional Redirect Path (Bitly style)
+    @GetMapping("/v/{shortUrl}")
+    public ResponseEntity<Object> redirectV(@PathVariable String shortUrl){
+        return findLongUrl(shortUrl);
+    }
+
+    // Keep the old /api/ redirect active so old links don't break
+    @GetMapping("/api/{shortUrl}")
     public ResponseEntity<Object> findLongUrl(@PathVariable String shortUrl){
         try{
             Url url = service.findByShortUrl(shortUrl);
