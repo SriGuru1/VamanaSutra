@@ -4,8 +4,9 @@
     "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "java -jar app.jar",
+    "startCommand": "java -Dserver.port=${PORT:5000} -jar app.jar",
     "restartPolicyType": "ON_FAILURE",
-    "healthcheckPath": "/api/health"
+    "healthcheckPath": "/",
+    "healthcheckTimeout": 300
   }
 }
