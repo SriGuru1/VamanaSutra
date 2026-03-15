@@ -23,4 +23,4 @@ WORKDIR /app
 COPY --from=backend-build /app/target/*.jar app.jar
 # Expose the port defined in application.properties
 EXPOSE 5000
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-5000} -jar app.jar"]
