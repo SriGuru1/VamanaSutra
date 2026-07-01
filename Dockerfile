@@ -20,7 +20,7 @@ RUN mvn clean package -DskipTests
 # Stage 3: Run the application
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-COPY --from=backend-build /app/target/*.jar app.jar
+COPY --from=backend-build /app/target/app.jar app.jar
 # Expose the port defined in application.properties
 EXPOSE 5000
 ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-5000} -jar app.jar"]

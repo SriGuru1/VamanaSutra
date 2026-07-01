@@ -1,14 +1,14 @@
 package com.urlShortener.Controller;
 
 import com.urlShortener.DTO.UrlRequest;
-import com.urlShortener.Exception.IllegalArgumentException;
-import com.urlShortener.Exception.UrlNotFoundException;
 import com.urlShortener.Model.Url;
-import com.urlShortener.Service.Service;
+import com.urlShortener.Service.UrlService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Map;
@@ -16,36 +16,43 @@ import java.util.Map;
 @RestController
 public class ControllerMain {
 
-    private final Service service;
+    private final UrlService service;
 
     @Autowired
-    public ControllerMain(Service service){
+    public ControllerMain(UrlService service){
         this.service = service;
     }
 
-    // This handles the shortening request
+    // Health check endpoint at /health to verify status without blocking the UI
+    @GetMapping("/health")
+    public ResponseEntity<Object> healthCheck() {
+        return ResponseEntity.ok(Map.of("Status", "SHR.NK Service is Online", "Message", "App is running successfully!"));
+    }
+
+    // Shorten URL request
     @PostMapping("/api/url-shortener")
-    public ResponseEntity<Object> urlShortener(@RequestBody UrlRequest longUrl){
+    public ResponseEntity<Object> urlShortener(@RequestBody UrlRequest longUrl, HttpServletRequest request){
         try{
-            Url url = service.convert(longUrl.getLongUrl());
+            String baseUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+            Url url = service.convert(longUrl.getLongUrl(), baseUrl);
             return ResponseEntity.ok(url);
         }
         catch(Exception e){
-            return ResponseEntity.badRequest().body(Map.of("Error",e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("Error", e.getMessage()));
         }
     }
 
-    // Professional Redirect Path (Bitly style)
-    @GetMapping("/v/{shortUrl}")
-    public ResponseEntity<Object> redirectV(@PathVariable String shortUrl){
-        return findLongUrl(shortUrl);
+    // Short redirection path
+    @GetMapping("/v/{shortCode}")
+    public ResponseEntity<Object> redirectV(@PathVariable String shortCode){
+        return findLongUrl(shortCode);
     }
 
-    // Keep the old /api/ redirect active so old links don't break
-    @GetMapping("/api/{shortUrl}")
-    public ResponseEntity<Object> findLongUrl(@PathVariable String shortUrl){
+    // Older /api/ redirect path
+    @GetMapping("/api/{shortCode}")
+    public ResponseEntity<Object> findLongUrl(@PathVariable String shortCode){
         try{
-            Url url = service.findByShortUrl(shortUrl);
+            Url url = service.findByShortUrl(shortCode);
             URI target = URI.create(url.getLongUrl());
             return ResponseEntity.status(HttpStatus.FOUND).location(target).build();
         } catch(Exception e){
